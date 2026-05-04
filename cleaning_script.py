@@ -22,9 +22,10 @@ def makefits(myimagebase, cleanup=False):
                 os.system('rm -rf {0}.{1}'.format(myimagebase, suffix).format(tt=ttsuffix))
 
 
-threshold = '10mJy'
-suffix = 'clean'
-cal = 'cal0'
+threshold = '0.4mJy'
+suffix = 'deep_clean'
+cal = 'cal2'
+ending = 'pbmask'
 
 
 
@@ -37,11 +38,11 @@ niter=100000
 
 
 
-ms = '/orange/adamginsburg/sgrb2/2024.1.00993.S/NB/calibrated_final/measurement_sets/uid___A002_X12f38f9_X7dd_targets.ms'
+ms = '/orange/adamginsburg/sgrb2/2024.1.00993.S/NB/calibrated_final/measurement_sets/uid___A002_X12f38f9_X7dd_targets_selfcal_1.ms'
 
 field='Sgr_B2'
 spw='17,19,21,23'
-robust=0.5
+robust=0
 
 specmode='mfs'
 outframe='LSRK'
@@ -57,11 +58,13 @@ interactive=False
 
 #0.00379Jy = 3mJy was the value in the pipeline delivered threshold
 
-imagename=f'sgr_b2_46ghz_cont_{suffix}_r{robust}_thresh_{threshold}_niter{niter}_{cal}'
+imagename=f'sgr_b2_46ghz_cont_{suffix}_r{robust}_thresh_{threshold}_niter{niter}_{cal}_{ending}'
+print('Running tclean with imagename: ' + imagename)
 if not os.path.exists(imagename+'.image.tt0'):
     tclean(vis=ms,
            imagename=imagename,
             field=field,
+            threshold=threshold,
             spw=spw,
            imsize=imsize,
            cell=cell,
@@ -76,5 +79,12 @@ if not os.path.exists(imagename+'.image.tt0'):
            pbcor=pbcor,
            pblimit=pblimit,
            savemodel=savemodel,
-           interactive=interactive)
+           interactive=interactive,
+           datacolumn='corrected',
+           #usemask='auto-multithresh',#)
+           #usemask='pb',
+           #pbmask=0.2,
+           restart=True,
+           calcpsf=False,
+           calcres=False,)
     makefits(imagename, cleanup=True)
